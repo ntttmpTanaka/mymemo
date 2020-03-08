@@ -1,0 +1,29 @@
+C# JSON1
+    public class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+    
+    MemoryStream ms = new MemoryStream();
+    StreamReader sr = new StreamReader(ms);
+    Person p = new Person();
+    p.Name = "Kato Jun";
+    p.Age = 31;
+    DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Person));
+    serializer.WriteObject(ms, p);
+    ms.Position = 0;
+    var json = sr.ReadToEnd();
+    TextBox1.Text = json;
+C# JSON2
+    DataContractJsonSerializerSettings Settings = new DataContractJsonSerializerSettings
+    {
+        UseSimpleDictionaryFormat = true
+    };
+    var stream = new MemoryStream();
+    var writer = JsonReaderWriterFactory.CreateJsonWriter(stream, Encoding.UTF8, true, true, "  ");
+    var serializer2 = new DataContractJsonSerializer(typeof(Person), Settings);
+    serializer2.WriteObject(writer, p);
+    writer.Flush();
+    var json2 = Encoding.UTF8.GetString(stream.ToArray());
+    MessageBox.Show(json2);
