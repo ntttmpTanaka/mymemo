@@ -1,0 +1,54 @@
+using System.Runtime.Serialization.Json;
+using System.Xml;
+using System.Collections.Generic;
+using System;
+using System.Text;
+using System.IO;
+namespace wpfJsonApi
+{
+    public partial class JsonFactory
+    {
+        public string map2json(Dictionary<string, string> map){
+            MemoryStream stream = new MemoryStream();
+            XmlDictionaryWriter xmlWriter = JsonReaderWriterFactory.CreateJsonWriter(stream);
+            xmlWriter.WriteStartDocument();
+            xmlWriter.WriteStartElement("root");
+            xmlWriter.WriteAttributeString("type", "object");
+            foreach(KeyValuePair<string, string> pair in map) {
+        
+                xmlWriter.WriteStartElement(pair.Key);
+                xmlWriter.WriteValue(pair.Value);
+                xmlWriter.WriteEndElement();
+            }
+            xmlWriter.WriteEndElement();
+            xmlWriter.Flush();
+            stream.Position = 0;
+            var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
+        }
+        public Dictionary<string, string> json2map(string json){
+            XmlDictionaryReader xmlReader =JsonReaderWriterFactory.CreateJsonReader(
+                        Encoding.UTF8.GetBytes(json), XmlDictionaryReaderQuotas.Max);
+            var map = new Dictionary<string, string>();
+            string key = "";
+            while(xmlReader.Read()) {
+                switch (xmlReader.NodeType) {
+                case XmlNodeType.Element:
+                    // Depth = 0(root node)skip
+                    if (xmlReader.Depth == 0) {
+                        break;
+                    }
+                    key = xmlReader.Name;
+                    if (xmlReader.MoveToAttribute("item")) {
+                        key = xmlReader.Value;
+                    }
+                    break;
+                case XmlNodeType.Text:
+                    map[key] = xmlReader.Value;
+                    break;
+                }
+            }
+            return map;
+        }
+    }
+}
