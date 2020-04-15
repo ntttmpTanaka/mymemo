@@ -1,0 +1,82 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class Test5 {
+	public static void main(String args[]) {
+		try {
+			HashMap<String,Object> map = new HashMap<String,Object>();
+			HashMap<String,String> innermap = new HashMap<String,String>();
+			map.put("key", "value");
+			innermap.put("innerkey2", "innervalue2");
+			map.put("key2",innermap);
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map);
+			System.out.println(json);
+			String taget = "key2.innerkey2";
+			Map<String, Object> outmap = mapper.readValue(json, new TypeReference<Map<String, Object>>(){});
+			outmap = sub(outmap,taget);
+			String json_transport = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(outmap);
+			System.out.println(json_transport);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	public static Map<String, Object> sub(Map<String, Object> outmap, String taget) {
+		try {
+			String[] tagetList = taget.split(Pattern.quote("."));
+			Object obj = outmap;
+			for(int i = 0;i < tagetList.length;i++) {
+				if(i == tagetList.length - 1) {
+					((HashMap<String, Object>) obj).put(tagetList[i],"transportvalue2");
+				}else {
+					obj = ((HashMap<String, Object>) obj).get(tagetList[i]);
+				}
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		return outmap;
+	}
+	public static void main2(String args[]) {
+		try {
+			HashMap<String,Object> map = new HashMap<String,Object>();
+			HashMap<String,String> innermap = new HashMap<String,String>();
+			map.put("key", "value");
+			innermap.put("innerkey2", "innervalue2");
+			map.put("key2",innermap);
+			System.out.println(map);
+
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(map);
+			System.out.println(json);
+
+			String taget = "key2.innerkey2";
+
+			Map<String, Object> outmap = mapper.readValue(json, new TypeReference<Map<String, Object>>(){});
+			String[] tagetList = taget.split(Pattern.quote("."));
+			Object obj = outmap;
+			for(int i = 0;i < tagetList.length;i++) {
+				//System.out.println(tagetList[i]);
+				if(i == tagetList.length - 1) {
+					Object obj_tmp = ((HashMap<String, Object>) obj).get(tagetList[i]);
+					//System.out.println("->" + obj_tmp);
+					((HashMap<String, Object>) obj).put(tagetList[i],"transportvalue2");
+					Object obj_tmp2 = ((HashMap<String, Object>) obj).get(tagetList[i]);
+					//System.out.println("->" + obj_tmp2);
+				}else {
+					obj = ((HashMap<String, Object>) obj).get(tagetList[i]);
+				}
+
+			}
+			//obj = new String("transportvalue2");
+			String json_transport = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(outmap);
+			System.out.println(json_transport);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
